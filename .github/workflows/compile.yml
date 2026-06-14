@@ -22,7 +22,7 @@ jobs:
     - name: Download Android Clang Toolchain (r547379)
       run: |
         mkdir -p clang-r547379
-        curl -Lo clang.tar.gz "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/main/clang-r547379?tar"
+        curl -Lo clang.tar.gz "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r547379.tar.gz"
         tar -xzf clang.tar.gz -C clang-r547379
         rm clang.tar.gz
         echo "$GITHUB_WORKSPACE/clang-r547379/bin" >> $GITHUB_PATH
