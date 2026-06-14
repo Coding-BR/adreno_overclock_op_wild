@@ -51,7 +51,7 @@ jobs:
     - name: Compile Adreno Overclock Module
       run: |
         export PATH=$GITHUB_WORKSPACE/clang-r547379/bin:$PATH
-        make KDIR=$GITHUB_WORKSPACE/kernel_source/out PWD=$GITHUB_WORKSPACE ARCH=arm64 SUBARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1 modules
+        make KDIR=$GITHUB_WORKSPACE/kernel_source/out PWD=$GITHUB_WORKSPACE ARCH=arm64 SUBARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1 all
 
     - name: Verify and Package KernelSU Module
       run: |
