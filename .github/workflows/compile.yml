@@ -17,7 +17,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y bc bison build-essential flex libelf-dev libssl-dev zip unzip
+        sudo apt-get install -y bc bison build-essential flex libelf-dev libssl-dev libdw-dev zip unzip
 
     - name: Download Android Clang Toolchain (r547379)
       run: |
