@@ -1,0 +1,6 @@
+id=rm11pro_gpu_oc
+name=RM11 Pro Adreno 750 Overclock 1250MHz (1.075V)
+version=v4.0
+versionCode=4
+author=Engenharia Reversa (REP) / Antigravity
+description=Overclocks Adreno 750 GPU from 1200MHz to 1250MHz at 1.075V on RedMagic 11 Pro (NX809J). Protects max frequency using Thermal Shield.

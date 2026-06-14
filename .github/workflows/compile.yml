@@ -1,0 +1,73 @@
+name: Compile Adreno Overclock Module
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Module Source
+      uses: actions/checkout@v4
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y bc bison build-essential flex libelf-dev libssl-dev zip unzip
+
+    - name: Download Android Clang Toolchain (r547379)
+      run: |
+        mkdir -p clang-r547379
+        curl -Lo clang.tar.gz "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/main/clang-r547379?tar"
+        tar -xzf clang.tar.gz -C clang-r547379
+        rm clang.tar.gz
+        echo "$GITHUB_WORKSPACE/clang-r547379/bin" >> $GITHUB_PATH
+
+    - name: Clone OnePlus 15 Kernel Source
+      run: |
+        git clone --depth 1 -b oneplus/sm8850_b_16.0.0_oneplus_15 https://github.com/OnePlusOSS/android_kernel_common_oneplus_sm8850.git kernel_source
+
+    - name: Configure and Prepare Kernel Headers
+      run: |
+        cd kernel_source
+        export PATH=$GITHUB_WORKSPACE/clang-r547379/bin:$PATH
+        make O=out ARCH=arm64 SUBARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1 gki_defconfig
+        
+        # Verify and copy Module.symvers
+        if [ -f "$GITHUB_WORKSPACE/symvers/Module.symvers" ]; then
+          echo "Found custom Module.symvers. Copying to build output..."
+          cp "$GITHUB_WORKSPACE/symvers/Module.symvers" out/Module.symvers
+        else
+          echo "WARNING: custom Module.symvers not found at symvers/Module.symvers!"
+          echo "Please commit your Module.symvers to the 'symvers' directory to ensure correct symbol CRCs."
+        fi
+        
+        make O=out ARCH=arm64 SUBARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1 modules_prepare
+
+    - name: Compile Adreno Overclock Module
+      run: |
+        export PATH=$GITHUB_WORKSPACE/clang-r547379/bin:$PATH
+        make KDIR=$GITHUB_WORKSPACE/kernel_source/out PWD=$GITHUB_WORKSPACE ARCH=arm64 SUBARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 LLVM_IAS=1 modules
+
+    - name: Verify and Package KernelSU Module
+      run: |
+        if [ ! -f adreno_overclock.ko ]; then
+          echo "::error::adreno_overclock.ko was not compiled successfully!"
+          exit 1
+        fi
+        
+        echo "adreno_overclock.ko compiled successfully."
+        cp adreno_overclock.ko ksu_module/
+        cd ksu_module
+        zip -r ../rm11pro_gpu_oc_1250mhz.zip ./*
+        echo "Created zip package: rm11pro_gpu_oc_1250mhz.zip"
+
+    - name: Upload Flashable ZIP Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rm11pro_gpu_oc_1250mhz
+        path: rm11pro_gpu_oc_1250mhz.zip
